@@ -1,117 +1,423 @@
-# PlantWise
+# 🌱 PlantWise
 
-Hyperlocal planting, irrigation and harvest advice for smallholder farmers in Nigeria,
-with **Ore**, a Claude-powered assistant farmers can chat with on the web or WhatsApp.
+**Smarter planting decisions. Better harvests.**
 
-agritech climate-tech smallholder-farmers nigeria weather whatsapp fastapi python javascript open-meteo sustainability hackathon
+PlantWise is a climate-smart agricultural assistant designed to help smallholder farmers make better farming decisions using local weather forecasts, crop information, and practical agricultural advice.
 
-Smallholder farmers still decide when to plant by guesswork, and a wrong planting date can wipe out a whole season. PlantWise reads the forecast for the farmer’s town and tells them in simple words when to plant, wait, or irrigate. Farmers just enter their WhatsApp number and get the advice every morning, with no app to open. They can also chat with Ore to ask about rain, watering, heat, and harvest.
+It helps farmers understand when to plant, when to wait, when to irrigate, and how changing weather conditions may affect their crops.
 
-## How it all connects
+Farmers can also interact with **Ore**, PlantWise's built-in farming assistant, through the web application or WhatsApp integration.
 
+---
+
+## 1. What PlantWise Does
+
+PlantWise provides:
+
+- **Weather Forecasts:** Current weather conditions and seven-day forecasts for supported Nigerian cities.
+- **Planting Advice:** Recommendations based on weather conditions and crop requirements.
+- **Irrigation Guidance:** Advice on when crops may need watering.
+- **Ore AI Assistant:** Answers farming and weather-related questions.
+- **WhatsApp Integration:** Allows farmers to interact with PlantWise through WhatsApp.
+- **Daily Weather Alerts:** Sends weather-related farming advice to subscribed farmers.
+- **Multiple Languages:** Supports English, Nigerian Pidgin, Yorùbá, and Hausa through Ore's built-in brain.
+
+## 2. How PlantWise Works
+
+PlantWise connects weather information, a farming rules engine, a database, and a web interface.
+
+### System architecture
+
+```text
+              FARMER
+                 |
+                 v
+          PLANTWISE WEB APP
+                 |
+                 v
+          FASTAPI BACKEND
+                 |
+       +---------+---------+
+       |         |         |
+       v         v         v
+    WEATHER    RULES      ORE
+    SERVICE    ENGINE   ASSISTANT
+       |         |         |
+       v         v         v
+   OPEN-METEO  FARMING   ANSWERS
+              ADVICE
+                 |
+                 v
+             SQLITE DB
+                 |
+                 v
+           WHATSAPP ALERTS
 ```
-Open-Meteo ──► weather.py ──► rules.py ──► /api/advice ──► web app (Today, This week)
-                                 │
-                                 ├──► ore.py -> brain.py ──► /api/ore ──► web app (Ask Ore)
-                                 │                     └─► WhatsApp chat (whatsapp.py)
-                                 └──► alerts.py ──► WhatsApp daily alerts
-web sign-up (Settings) ──► /api/farmers ──► SQLite (db.py) ──► alerts.py
-```
 
-The weather icon (top right of the app) opens a panel where you pick any listed Nigerian city and see its current weather and 7-day outlook. Add more cities in `backend/app/data.py` and `frontend/js/app.js`.
+### How the process works
 
-One service runs everything: the backend serves the web app and the API on the same address.
+1. A farmer opens PlantWise and selects a city and crop.
+2. The backend requests weather information from Open-Meteo.
+3. The rules engine evaluates the forecast against crop-related thresholds.
+4. PlantWise generates practical farming recommendations.
+5. The frontend displays the results.
+6. Farmers can also ask Ore questions or subscribe to WhatsApp alerts.
 
-```
-plantwise/
+## 3. Technology Stack
+
+| Component | Technology |
+|---|---|
+| Frontend | HTML, CSS, JavaScript |
+| Backend | Python, FastAPI |
+| Weather data | Open-Meteo |
+| Database | SQLite |
+| AI assistant | Ore built-in brain |
+| Optional AI provider | Anthropic Claude |
+| Messaging | WhatsApp Cloud API |
+| Web server | Nginx |
+| Application server | Uvicorn |
+| Hosting | Vultr VPS |
+| Operating system | Ubuntu 24.04 |
+
+## 4. Project Structure
+
+```text
+Plant-wise/
+│
 ├── backend/
 │   ├── app/
-│   │   ├── main.py        API routes + serves the web app
-│   │   ├── rules.py       rules engine: forecast -> verdict, alerts, farmer message
-│   │   ├── weather.py     Open-Meteo forecast (free, cached 30 min)
-│   │   ├── brain.py       Ore's own brain (intents, forecast answers, 4 languages)
-│   │   ├── ore.py        picks the brain: own (default) or Claude
-│   │   ├── whatsapp.py    WhatsApp webhook (chat) and send helper
-│   │   ├── alerts.py      daily WhatsApp alerts to subscribed farmers
-│   │   ├── db.py          SQLite: farmers, subscriptions, chat history
-│   │   ├── messages.py    EN / Pidgin / Yorùbá / Hausa templates
-│   │   ├── data.py        cities and crop thresholds
-│   │   ├── utils.py       phone number cleanup
-│   │   └── config.py      environment settings
-│   ├── tests/             rules + database tests
+│   │   ├── main.py
+│   │   ├── rules.py
+│   │   ├── weather.py
+│   │   ├── brain.py
+│   │   ├── ore.py
+│   │   ├── whatsapp.py
+│   │   ├── alerts.py
+│   │   ├── db.py
+│   │   ├── messages.py
+│   │   ├── data.py
+│   │   ├── utils.py
+│   │   └── config.py
+│   │
+│   ├── tests/
 │   └── requirements.txt
-├── frontend/              mobile-first web app, no build step
+│
+├── frontend/
 │   ├── index.html
-│   ├── css/style.css
-│   └── js/{config.js, app.js}
+│   ├── css/
+│   │   └── style.css
+│   └── js/
+│       ├── config.js
+│       └── app.js
+│
 ├── .env.example
 └── README.md
 ```
 
-## Run it
+## 5. Running PlantWise Locally
+
+### Requirements
+
+- Python 3.10 or newer
+- Git
+- Internet connection for live weather data
+
+### Installation
+
+Clone the repository:
 
 ```bash
-cd backend
-python -m venv .venv && source .venv/bin/activate     # Windows: .venv\Scripts\activate
+git clone https://github.com/oluwasetemiige/Plant-wise.git
+```
+
+Enter the backend directory:
+
+```bash
+cd Plant-wise/backend
+```
+
+Create a virtual environment:
+
+```bash
+python -m venv venv
+```
+
+Activate it:
+
+**Windows:**
+
+```bash
+venv\Scripts\activate
+```
+
+**Linux/macOS:**
+
+```bash
+source venv/bin/activate
+```
+
+Install dependencies:
+
+```bash
 pip install -r requirements.txt
-cp ../.env.example .env                                # Ore works with no API key
+```
+
+Start the application:
+
+```bash
 uvicorn app.main:app --reload
 ```
 
-Open http://localhost:8000 for the app and http://localhost:8000/docs for the API.
-Run `pytest` in `backend/` to check the rules and database.
+Open the application:
 
-## Ore's brain
-
-Ore answers with her own built-in brain (`backend/app/brain.py`): no API key and no cost. She understands
-questions about planting, rain, watering, heat, harvest and weather alerts in English, Pidgin, Yorùbá and Hausa, picks out the
-crop and city a farmer mentions, and answers from the live forecast and the PlantWise rules. Pesticide and fertilizer
-questions go to the local extension officer. To teach her more, edit the keyword lists, `TEXT` and `TIPS` in `brain.py`.
-To use Claude instead, set `ORE_BRAIN=claude` and `ANTHROPIC_API_KEY` in `.env`.
-
-## API
-
-| Method | Path | Purpose |
-|---|---|---|
-| GET | `/api/advice?city=Kano&crop=maize&lang=ha` | verdict, reason, alerts, farmer message |
-| GET | `/api/forecast?city=Kano` | 7-day rain, rain chance, high/low |
-| GET | `/api/weather?city=Lagos` | current conditions + 7-day outlook (weather panel) |
-| POST | `/api/ore` | `{message, history, city, crop}` -> `{reply}` |
-| POST | `/api/farmers` | `{phone, city, crop, lang}` subscribe to daily alerts |
-| POST | `/api/alerts/run` | send daily alerts now (header `X-Admin-Token`) |
-| GET | `/api/options` | cities, crops, languages |
-| GET/POST | `/webhook/whatsapp` | WhatsApp Cloud API webhook |
-
-## WhatsApp setup (Meta Cloud API)
-
-1. Create an app at developers.facebook.com and add the WhatsApp product.
-2. Put the access token and phone number ID in `.env`, and pick a `WA_VERIFY_TOKEN`.
-3. Deploy the backend over HTTPS (or use `ngrok http 8000` while testing).
-4. In the WhatsApp config, set the webhook to `https://YOUR-URL/webhook/whatsapp`, enter your verify token, and subscribe to `messages`.
-5. Farmers message the number: `city Kano`, `crop rice`, `lang ha`, `today`, `stop`, `start`, or any question for Ore.
-
-## Daily alerts
-
-Farmers subscribe in the app (Settings) or by sending `START` on WhatsApp. Send the alerts with:
-
-```bash
-python -m app.alerts                       # run from cron, e.g. 0 6 * * *
-curl -X POST https://YOUR-URL/api/alerts/run -H "X-Admin-Token: $ADMIN_TOKEN"
+```text
+http://127.0.0.1:8000
 ```
 
-WhatsApp only allows free-form messages within 24 hours of the farmer's last message.
-For daily alerts to everyone else, create a message template in Meta Business Manager
-with one variable (body: `{{1}}`), get it approved, and set `WA_TEMPLATE_NAME` in `.env`.
+API documentation:
 
-## Deploy
+```text
+http://127.0.0.1:8000/docs
+```
 
-Any host that runs Python works (Render, Railway, a Vultr VPS). Start command:
-`uvicorn app.main:app --host 0.0.0.0 --port $PORT`. Set the `.env` values as environment
-variables, and keep `DB_PATH` on a persistent disk (or move to Postgres for scale).
+## 6. API Endpoints
 
-## Next steps
+PlantWise uses FastAPI to handle communication between the frontend and backend.
 
-- Add SMS (Africa's Talking or Termii) beside WhatsApp.
-- Give Ore a knowledge base of local crop calendars and extension-service advice.
-- Tune the crop thresholds in `data.py` with local agro-meteorology data.
-- Have native speakers review `messages.py` and Ore's replies in each language.
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/api/health` | Checks backend availability |
+| GET | `/api/options` | Returns supported cities, crops and languages |
+| GET | `/api/forecast` | Returns a seven-day forecast |
+| GET | `/api/weather` | Returns current weather and outlook |
+| GET | `/api/advice` | Generates farming recommendations |
+| POST | `/api/ore` | Sends a question to Ore |
+| POST | `/api/farmers` | Registers a farmer for alerts |
+| POST | `/api/alerts/run` | Runs daily alerts |
+| GET/POST | `/webhook/whatsapp` | Handles WhatsApp webhook requests |
+
+Interactive API documentation is available at `/docs`.
+
+## 7. Ore — The Farming Assistant
+
+Ore is the conversational assistant built into PlantWise.
+
+By default, Ore uses its own built-in response engine, so it does not require an external AI API key.
+
+Ore can help farmers with questions about:
+
+- Planting periods
+- Rainfall
+- Irrigation
+- Heat conditions
+- Harvesting
+- Weather alerts
+
+It supports English, Nigerian Pidgin, Yorùbá, and Hausa.
+
+An optional Claude integration is also available through environment configuration.
+
+## 8. Database
+
+PlantWise uses SQLite to store farmer information and chat history.
+
+The database stores:
+
+- Farmer phone numbers
+- Selected cities
+- Preferred crops
+- Language preferences
+- Alert subscription status
+- Chat messages
+
+The database is initialized automatically when the backend starts.
+
+The default database path is `plantwise.db`, relative to the backend working directory.
+
+For production, keep this file on persistent storage and back it up regularly.
+
+## 9. Production Deployment — Vultr
+
+PlantWise is deployed on a Vultr VPS running Ubuntu 24.04.
+
+**Live application:**
+
+http://139.84.250.6
+
+### Deployment architecture
+
+```text
+             INTERNET
+                 |
+                 v
+             VULTR VPS
+                 |
+                 v
+               NGINX
+                 |
+                 v
+          127.0.0.1:8000
+                 |
+                 v
+            FASTAPI
+             UVICORN
+                 |
+          +------+------+
+          |             |
+          v             v
+       FRONTEND       API
+          |             |
+          +------+------+
+                 |
+                 v
+              SQLITE
+```
+
+### Nginx
+
+Nginx acts as a reverse proxy.
+
+It receives requests on port 80 and forwards them internally to FastAPI on port 8000.
+
+This allows visitors to access the application without specifying the backend port.
+
+### Systemd
+
+PlantWise runs as a Linux system service called `plantwise`.
+
+Useful commands:
+
+Check service status:
+
+```bash
+systemctl status plantwise
+```
+
+Restart PlantWise:
+
+```bash
+systemctl restart plantwise
+```
+
+Stop PlantWise:
+
+```bash
+systemctl stop plantwise
+```
+
+Start PlantWise:
+
+```bash
+systemctl start plantwise
+```
+
+View application logs:
+
+```bash
+journalctl -u plantwise -n 50 --no-pager
+```
+
+### Nginx commands
+
+Check configuration:
+
+```bash
+nginx -t
+```
+
+Restart Nginx:
+
+```bash
+systemctl restart nginx
+```
+
+Check Nginx status:
+
+```bash
+systemctl status nginx
+```
+
+### Firewall
+
+The Ubuntu firewall is configured to allow web traffic and SSH access.
+
+The intended public access is:
+
+| Port | Purpose |
+|---|---|
+| 22 | SSH administration |
+| 80 | HTTP website |
+
+Port 8000 is intended for internal communication between Nginx and FastAPI, not public access.
+
+**Deployment note:** The current public address uses HTTP. HTTPS has not yet been configured because a domain name has not been connected.
+
+## 10. Environment Configuration
+
+PlantWise reads configuration from environment variables.
+
+Important settings include:
+
+| Variable | Purpose |
+|---|---|
+| `ORE_BRAIN` | Selects Ore's response engine |
+| `ANTHROPIC_API_KEY` | Optional Claude API key |
+| `CLAUDE_MODEL` | Claude model selection |
+| `DB_PATH` | SQLite database location |
+| `ADMIN_TOKEN` | Protects the daily alerts endpoint |
+| `WA_VERIFY_TOKEN` | WhatsApp webhook verification |
+| `WA_ACCESS_TOKEN` | WhatsApp API access |
+| `WA_PHONE_NUMBER_ID` | WhatsApp phone number identifier |
+| `WA_TEMPLATE_NAME` | Approved WhatsApp template |
+| `WA_TEMPLATE_LANG` | WhatsApp template language |
+| `ALLOWED_ORIGINS` | Allowed frontend origins |
+
+Keep credentials and API tokens private. Never commit real secrets to GitHub.
+
+## 11. Testing
+
+Check the backend health endpoint:
+
+```bash
+curl http://127.0.0.1:8000/api/health
+```
+
+Expected response:
+
+```json
+{
+  "status": "ok"
+}
+```
+
+Run the project tests from the backend directory:
+
+```bash
+pytest
+```
+
+## 12. Future Improvements
+
+Planned areas for improvement include:
+
+- Custom domain and HTTPS configuration.
+- Automated database backups.
+- More Nigerian cities and crop varieties.
+- Improved local agricultural recommendations.
+- SMS notifications.
+- More advanced AI assistance.
+- Native mobile application.
+- Expanded language support.
+- Improved monitoring and uptime reporting.
+
+---
+
+## About PlantWise
+
+PlantWise is built around one simple idea:
+
+**Farmers should have access to useful weather information and practical farming advice before making decisions that affect their harvest.**
+
+By combining climate information with accessible technology, PlantWise aims to make agricultural decision-making smarter, easier, and more accessible.
+
+**PlantWise — Helping farmers grow with confidence.** 🌱
